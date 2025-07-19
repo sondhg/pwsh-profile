@@ -1,0 +1,5 @@
+# Ignore all files in the PowerShell profile directory except the profile itself
+/*
+# The "!" at the beginning of the line means "do not ignore"
+!.gitignore
+!Microsoft.PowerShell_profile.ps1
