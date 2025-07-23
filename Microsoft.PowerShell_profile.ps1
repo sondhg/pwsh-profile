@@ -20,17 +20,17 @@ $env:BAT_THEME = 'tokyonight_night'
 $env:STARSHIP_CONFIG = "$HOME\.config\starship.toml"
 
 # Configure fzf to use fd for file search
-$env:FZF_DEFAULT_COMMAND = 'fd --type file --strip-cwd-prefix --hidden --follow --exclude .git'
+$env:FZF_DEFAULT_COMMAND = 'fd --type file --strip-cwd-prefix --hidden --exclude .git --exclude .cache'
 # Use same fd command for Ctrl+T file search
 $env:FZF_CTRL_T_COMMAND = $env:FZF_DEFAULT_COMMAND
 # Configure fd for Alt+C directory search
-$env:FZF_ALT_C_COMMAND = 'fd --type directory --strip-cwd-prefix --hidden --follow --exclude .git'
+$env:FZF_ALT_C_COMMAND = 'fd --type directory --strip-cwd-prefix --hidden --exclude .git --exclude .cache'
 
 # Preview file content using bat (https://github.com/sharkdp/bat). Because I use fd for FZF_DEFAULT_COMMAND, the "--bind 'ctrl-/:change-preview-window(down|hidden|)'" in FZF_CTRL_T_OPTS won't work.
-$env:FZF_CTRL_T_OPTS = "--walker-skip .git,node_modules,target --preview 'bat -n --color=always {}'"
+$env:FZF_CTRL_T_OPTS = "--walker-skip .git,node_modules,target,Library --preview 'bat -n --color=always {}'"
 
 # Print tree structure in the preview window with eza
-$env:FZF_ALT_C_OPTS = "--walker-skip .git,node_modules,target --preview 'eza --color=always --all --git-ignore --group-directories-first --tree {}'"
+$env:FZF_ALT_C_OPTS = "--walker-skip .git,node_modules,target,Library --preview 'eza --color=always --all --git-ignore --group-directories-first --tree {}'"
 
 # ============================================================================
 # ! MODULE IMPORTS
@@ -92,8 +92,20 @@ function pcd {
     Set-Location (Split-Path -Path $PROFILE -Parent)
 }
 
+function tldrf {
+    tldr --list | Select-String -Pattern ".*" | ForEach-Object { $_.ToString() } |
+    fzf --preview "tldr --color=always {1}" --preview-window="right,70%" |
+    ForEach-Object { tldr $_.Trim() }
+}
 
 # ============================================================================
 # ! ALIASES
 # ============================================================================
 Set-Alias -Name "lg" -Value "lazygit"
+
+# ============================================================================
+# ! KEYBINDINGS
+# ============================================================================
+
+# Ctrl+f to accept suggestion word by word, not entire line
+Set-PSReadLineKeyHandler -Chord "Ctrl+f" -Function ForwardWord
